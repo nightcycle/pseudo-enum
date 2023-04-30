@@ -2,6 +2,8 @@ from luau import indent_block
 from luau.convert import from_list, from_dict, mark_as_literal
 from luau.roblox import write_script
 from src.config import get_config_data
+import os
+import sys
 
 def write_as_literal_str_list(type_name: str, string_list: list[str]) -> str:
 	enum_str_list = []
@@ -112,7 +114,5 @@ def main():
 		content.append(entry_block)
 
 	content.append("}")
-
-	print("")
-
+	print(build_path)
 	write_script(build_path, "\n".join(content), write_as_directory=False)

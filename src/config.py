@@ -1,6 +1,11 @@
 import os
 import toml
 from typing import TypedDict, Literal, Any
+import sys
+
+# f = open(os.devnull, 'w')
+# sys.stdout = f
+# sys.stderr = f
 
 TOML_CONFIG_PATH = "pseudo-enum.toml"
 DEFAULT_CONFIG_FILE = {

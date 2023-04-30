@@ -30,7 +30,7 @@ jobs:
           - os: windows-latest
             exe_name: pseudo-enum.exe
             asset_content_type: application/octet-stream
-            build_command: pyinstaller --onefile src/__init__.py -n pseudo-enum
+            build_command: pyinstaller --onefile src/__init__.py -n pseudo-enum --additional-hooks-dir=hooks
             zip_suffix: -win64
 
     runs-on: ${{ matrix.os }}

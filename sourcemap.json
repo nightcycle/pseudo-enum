@@ -1,0 +1,1 @@
+{"name":"Gamework","className":"DataModel","filePaths":["default.project.json"],"children":[{"name":"ReplicatedStorage","className":"ReplicatedStorage","children":[{"name":"Shared","className":"Folder","children":[{"name":"PseudoEnum","className":"ModuleScript","filePaths":["out/Shared\\PseudoEnum.luau"]}]}]}]}
