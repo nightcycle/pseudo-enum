@@ -10,12 +10,15 @@ import sys
 TOML_CONFIG_PATH = "pseudo-enum.toml"
 DEFAULT_CONFIG_FILE = {
 	"build_path": "out/Shared/PseudoEnum.luau",
+	"use_union_types_for_tree": True,
+	"use_union_types_for_export": False,
 	"enums": {},
 }
 
 class PseudoEnumConfig(TypedDict):
 	build_path: str
-	import_as_class: bool
+	use_union_types_for_tree: bool
+	use_union_types_for_export: bool
 	enums: dict[str, list[str]]
 
 def init_config():

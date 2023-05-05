@@ -5,16 +5,19 @@ from src.config import get_config_data
 import os
 import sys
 
-def write_as_literal_str_list(type_name: str, string_list: list[str]) -> str:
-	enum_str_list = []
+def write_as_literal_str_list(type_name: str, string_list: list[str], use_union_type: bool) -> str:
+	if use_union_type:
+		enum_str_list = []
 
-	for i, enum_item_name in enumerate(string_list):
-		if i > 0:			
-			enum_str_list.append(f"\n| \"{enum_item_name}\"")
-		else:
-			enum_str_list.append(f"\"{enum_item_name}\"")
+		for i, enum_item_name in enumerate(string_list):
+			if i > 0:			
+				enum_str_list.append(f"\n| \"{enum_item_name}\"")
+			else:
+				enum_str_list.append(f"\"{enum_item_name}\"")
 
-	return f"export type {type_name} = (" + "\n".join(enum_str_list) + "\n\n)"
+		return f"export type {type_name} = (" + "\n".join(enum_str_list) + "\n\n)"
+	else:
+		return f"export type {type_name} = string"
 
 def main():
 	config_data = get_config_data()
@@ -32,7 +35,7 @@ def main():
 		enum_name_list.append(enum_name)
 		enum_list_content = from_list(enum_list, multi_line=False, skip_initial_indent=True)
 		
-		enum_literal_type = write_as_literal_str_list(enum_name, enum_list)
+		enum_literal_type = write_as_literal_str_list(enum_name, enum_list, config_data["use_union_types_for_export"])
 
 		pseudo_block = [
 			"\n" + enum_literal_type,
@@ -109,7 +112,10 @@ def main():
 	for enum_name, enum_list in config_data["enums"].items():
 		entry = {}
 		for v in enum_list:
-			entry[v] = mark_as_literal(f"\"{v}\" :: {enum_name}")
+			if config_data["use_union_types_for_tree"]:
+				entry[v] = mark_as_literal(f"\"{v}\" :: {enum_name}")
+			else:
+				entry[v] = mark_as_literal(f"\"{v}\"")
 		entry_block = f"{enum_name} = " + from_dict(entry, skip_initial_indent=True) + ","
 		content.append(entry_block)
 
