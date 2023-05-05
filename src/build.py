@@ -45,7 +45,7 @@ def main():
 		content += pseudo_block
 
 
-	enum_name_literal_type = write_as_literal_str_list("EnumName", enum_name_list)
+	enum_name_literal_type = write_as_literal_str_list("EnumName", enum_name_list, config_data["use_union_types_for_export"])
 	content.append(enum_name_literal_type)
 
 	content += [
