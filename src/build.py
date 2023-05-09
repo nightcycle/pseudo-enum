@@ -120,5 +120,5 @@ def main():
 		content.append(entry_block)
 
 	content.append("}")
-	print(build_path)
+	# print(build_path)
 	write_script(build_path, "\n".join(content), write_as_directory=False)
