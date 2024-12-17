@@ -1,0 +1,22 @@
+[package]
+name = "pseudo-enum"
+version = "0.1.0"
+edition = "2021"
+
+
+[lib]
+name = "lib"
+path = "src/lib.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[dependencies]
+serde = { version = "1.0.216", features = ["derive"] }
+serde_json = "1.0.132"
+clap = { version = "4.4.10", features = ["derive"] }
+derivative = "2.2.0"
+toml = "0.8.19"
+
+[dev-dependencies]
+lipsum = "0.9.1"
+rstest = { version = "0.23" }
+serial_test = "3.2.0"

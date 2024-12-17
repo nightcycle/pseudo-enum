@@ -1,5 +1,14 @@
 {
-	"python.linting.mypyEnabled": true,
-	"python.linting.enabled": true,
-	"luau-lsp.sourcemap.rojoProjectFile": "default.project.json"
+	"editor.formatOnSave": true,
+	"files.autoSave": "onFocusChange",
+	"files.exclude": {
+		"Cargo.lock": true,
+		"target": true,
+	},
+	"[github-actions-workflow]": {
+		"editor.tabSize": 2,
+		"editor.insertSpaces": true,
+		"editor.detectIndentation": false
+	},
+	"secrets.enabledFolders": []
 }
