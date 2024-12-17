@@ -1,68 +1,113 @@
-name: Build and Publish Exe
-
+name: Release
+# originally from https://github.com/JohnnyMorganz/StyLua/blob/5de9a1da8a8dc628b98240e12ffe24c7fdbbea6e/src/editorconfig.rs
 on:
-  push:
-    branches:
-      - main
+  release:
+    types: [published]
 
 jobs:
-  create_release:
+  get_published_release:
     runs-on: ubuntu-latest
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
-    steps:
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-        with:
-          tag_name: ${{ github.sha }}
-          release_name: Release ${{ github.sha }}
-          draft: true
 
-  build_and_publish:
-    needs: create_release
+    outputs:
+      release_id: ${{ steps.release_info.outputs.release_id }}
+      upload_url: ${{ steps.release_info.outputs.upload_url }}
+      tag_name: ${{ steps.release_info.outputs.tag_name }}
+      repo_desc: ${{ steps.release_info.outputs.repo_desc }}
+      repo_name: ${{ steps.release_info.outputs.repo_name }}
+      repo_owner_name: ${{ steps.release_info.outputs.repo_owner_name }}
+
+    steps:
+      - name: Set Release Info
+        id: release_info
+        run: |
+          echo "tag_name=v1.0.0" >> $GITHUB_ENV
+          echo "release_id=191104411" >> $GITHUB_ENV
+          echo "upload_url=https://uploads.github.com/repos/nightcycle/pseudo-enum/releases/191104411/assets{?name,label}" >> $GITHUB_ENV
+          echo "repo_owner_name=nightcycle" >> $GITHUB_ENV
+          echo "repo_name=pseudo-enum" >> $GITHUB_ENV
+
+          repo_owner_name=${{ github.repository_owner }}
+          echo "::set-output name=repo_owner_name::$repo_owner_name"
+
+          repo_name=${{ github.repository }}
+          forward_repo_pattern="${repo_owner_name}/"
+          empty_str=""
+          repo_name="${repo_name/${forward_repo_pattern}/${empty_str}}"
+          echo "::set-output name=repo_name::$repo_name"
+
+          # Use the GitHub API to fetch the repository description
+          description_prefix="\"description\":"
+          curl -L "https://api.github.com/repos/${repo_owner_name}/${repo_name}" > "desc.text"
+          desc=$(<desc.text)
+          desc=$(echo "$desc" | grep -F "$description_prefix")
+          desc="${desc/${description_prefix}/${empty_str}}"
+          repo_desc=$(echo "$desc" | grep -o '"[^"]*"')
+          echo "::set-output name=repo_desc::$repo_desc"
+
+  release:
+    needs: ["get_published_release"]
     strategy:
       matrix:
-        os: [windows-latest] # ubuntu-latest, macOS-latest]
         include:
           - os: windows-latest
-            exe_name: pseudo-enum.exe
-            asset_content_type: application/octet-stream
-            build_command: pyinstaller --onefile src/__init__.py -n pseudo-enum --additional-hooks-dir=hooks
-            zip_suffix: -win64
+            artifact-name: rojo-cloud-sync-windows-x86_64
+            artifact-alias: rojo-cloud-sync-win64
+            cargo-target: x86_64-pc-windows-msvc
 
+    name: Build (${{ matrix.artifact-name }})
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
         with:
-          python-version: '3.12'
+          target: ${{ matrix.cargo-target }}
 
-      - name: Install dependencies
+      - name: Build Binary
+        run: cargo build --verbose --release --target ${{ matrix.cargo-target }}
+        env:
+          CARGO_TARGET_DIR: output
+
+      - name: Setup Archive + Extension
+        shell: bash
         run: |
-          pip install -r requirements.txt
+          mkdir -p staging
 
-      - name: Build exe file
-        run: |
-          ${{ matrix.build_command }}
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            cp "output/${{ matrix.cargo-target }}/release/pseudo-enum.exe" staging/
+            cd staging
+            7z a ../release.zip *
+          else
+            cp "output/${{ matrix.cargo-target }}/release/pseudo-enum" staging/
+            cd staging
+            zip ../release.zip *
+          fi
 
-      - name: Create ZIP archive and rename executable
-        run: |
-          mkdir dist-zip
-          cp dist/${{ matrix.exe_name }} dist/pseudo-enum${{ matrix.zip_suffix }}
-          7z a dist-zip/pseudo-enum${{ matrix.zip_suffix }}.zip dist/pseudo-enum${{ matrix.zip_suffix }}
+      - name: Upload Binary Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: release.zip
 
-      - name: Upload zip file to Release
+      - name: Upload Binary to Release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         with:
-          upload_url: ${{ needs.create_release.outputs.upload_url }}
-          asset_path: dist-zip/pseudo-enum${{ matrix.zip_suffix }}.zip
-          asset_name: pseudo-enum${{ matrix.zip_suffix }}.zip
-          asset_content_type: ${{ matrix.asset_content_type }}
+          upload_url: ${{ needs.get_published_release.outputs.upload_url }}
+          asset_path: release.zip
+          asset_name: ${{ matrix.artifact-name }}.zip
+          asset_content_type: application/zip
+
+      # TODO: Remove this after deprecation notice
+      - name: Upload Binary to Release aliases
+        if: ${{ matrix.artifact-alias != '' }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        with:
+          upload_url: ${{ needs.get_published_release.outputs.upload_url }}
+          asset_path: release.zip
+          asset_name: ${{ matrix.artifact-alias }}.zip
+          asset_content_type: application/zip
