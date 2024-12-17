@@ -49,8 +49,8 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            artifact-name: rojo-cloud-sync-windows-x86_64
-            artifact-alias: rojo-cloud-sync-win64
+            artifact-name: pseudo-enum-windows-x86_64
+            artifact-alias: pseudo-enum-win64
             cargo-target: x86_64-pc-windows-msvc
 
     name: Build (${{ matrix.artifact-name }})
