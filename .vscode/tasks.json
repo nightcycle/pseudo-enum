@@ -1,0 +1,14 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "init workspace",
+			"type": "shell",
+			"command": "sh scripts/init.sh",
+			"problemMatcher": [],
+			"runOptions": {
+				"runOn": "folderOpen"
+			}
+		}
+	]
+}
