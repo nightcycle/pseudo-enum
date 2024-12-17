@@ -374,7 +374,7 @@ pub fn dump(config: EnumSetConfig) -> String {
             if i > 0 {
                 get_items_union_type.push_str(" & ");
             }
-            get_items_union_type.push_str(&format!("((\"{}\") -> {})", e.name, e.name));
+            get_items_union_type.push_str(&format!("((\"{}\") -> {{{}}})", e.name, e.name));
         }
         get_items_union_type.push_str(")");
     }
