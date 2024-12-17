@@ -20,6 +20,7 @@ jobs:
         id: release_info
         shell: bash
         run: |
+          set -e
           echo "release_id=${{ github.event.release.id }}" >> $GITHUB_OUTPUT
           echo "upload_url=${{ github.event.release.upload_url }}" >> $GITHUB_OUTPUT
           echo "tag_name=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
@@ -36,9 +37,10 @@ jobs:
           description_prefix="\"description\":"
           curl -sL "https://api.github.com/repos/$repo_owner_name/$repo_name" > desc.text
           desc=$(<desc.text)
-          desc=$(echo "$desc" | grep -F "$description_prefix" | head -n 1)
+          # Avoid failing if grep finds nothing
+          desc=$(echo "$desc" | grep -F "$description_prefix" | head -n 1 || true)
           desc="${desc/$description_prefix/$empty_str}"
-          repo_desc=$(echo "$desc" | grep -o '"[^"]*"')
+          repo_desc=$(echo "$desc" | grep -o '"[^"]*"' || true)
           echo "repo_desc=$repo_desc" >> $GITHUB_OUTPUT
 
   release:
