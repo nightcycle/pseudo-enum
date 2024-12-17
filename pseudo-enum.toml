@@ -1,0 +1,6 @@
+build_path = "src/Shared/Enums.luau"
+use_union_types_for_export = true
+use_union_types_for_parameters = true
+assign_static_strings = true
+[enums]
+"TestEnum" = ["Test1", "Test2"]
