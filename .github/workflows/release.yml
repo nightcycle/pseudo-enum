@@ -1,5 +1,4 @@
 name: Release
-# originally from https://github.com/JohnnyMorganz/StyLua/blob/5de9a1da8a8dc628b98240e12ffe24c7fdbbea6e/src/editorconfig.rs
 on:
   release:
     types: [published]
@@ -19,33 +18,31 @@ jobs:
     steps:
       - name: Set Release Info
         id: release_info
+        shell: bash
         run: |
-          echo "tag_name=v1.0.0" >> $GITHUB_ENV
-          echo "release_id=191104411" >> $GITHUB_ENV
-          echo "upload_url=https://uploads.github.com/repos/nightcycle/pseudo-enum/releases/191104411/assets{?name,label}" >> $GITHUB_ENV
-          echo "repo_owner_name=nightcycle" >> $GITHUB_ENV
-          echo "repo_name=pseudo-enum" >> $GITHUB_ENV
+          echo "release_id=${{ github.event.release.id }}" >> $GITHUB_OUTPUT
+          echo "upload_url=${{ github.event.release.upload_url }}" >> $GITHUB_OUTPUT
+          echo "tag_name=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
 
-          repo_owner_name=${{ github.repository_owner }}
-          echo "::set-output name=repo_owner_name::$repo_owner_name"
+          repo_owner_name="${{ github.repository_owner }}"
+          echo "repo_owner_name=$repo_owner_name" >> $GITHUB_OUTPUT
 
-          repo_name=${{ github.repository }}
+          repo_name="${{ github.repository }}"
           forward_repo_pattern="${repo_owner_name}/"
           empty_str=""
-          repo_name="${repo_name/${forward_repo_pattern}/${empty_str}}"
-          echo "::set-output name=repo_name::$repo_name"
+          repo_name="${repo_name/$forward_repo_pattern/$empty_str}"
+          echo "repo_name=$repo_name" >> $GITHUB_OUTPUT
 
-          # Use the GitHub API to fetch the repository description
           description_prefix="\"description\":"
-          curl -L "https://api.github.com/repos/${repo_owner_name}/${repo_name}" > "desc.text"
+          curl -sL "https://api.github.com/repos/$repo_owner_name/$repo_name" > desc.text
           desc=$(<desc.text)
-          desc=$(echo "$desc" | grep -F "$description_prefix")
-          desc="${desc/${description_prefix}/${empty_str}}"
+          desc=$(echo "$desc" | grep -F "$description_prefix" | head -n 1)
+          desc="${desc/$description_prefix/$empty_str}"
           repo_desc=$(echo "$desc" | grep -o '"[^"]*"')
-          echo "::set-output name=repo_desc::$repo_desc"
+          echo "repo_desc=$repo_desc" >> $GITHUB_OUTPUT
 
   release:
-    needs: ["get_published_release"]
+    needs: [get_published_release]
     strategy:
       matrix:
         include:
@@ -73,7 +70,6 @@ jobs:
         shell: bash
         run: |
           mkdir -p staging
-
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
             cp "output/${{ matrix.cargo-target }}/release/pseudo-enum.exe" staging/
             cd staging
@@ -100,7 +96,6 @@ jobs:
           asset_name: ${{ matrix.artifact-name }}.zip
           asset_content_type: application/zip
 
-      # TODO: Remove this after deprecation notice
       - name: Upload Binary to Release aliases
         if: ${{ matrix.artifact-alias != '' }}
         uses: actions/upload-release-asset@v1
