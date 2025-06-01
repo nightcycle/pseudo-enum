@@ -35,6 +35,9 @@ jobs:
 
   release:
     needs: ["get_published_release"]
+    permissions:
+      contents: write
+      packages: write
     strategy:
       matrix:
         include:
