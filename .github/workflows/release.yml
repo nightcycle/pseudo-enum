@@ -50,9 +50,13 @@ jobs:
             artifact-alias: pseudo-enum-linux
             cargo-target: x86_64-unknown-linux-gnu
           - os: macos-latest
-            artifact-name: pseudo-enum-macos
-            artifact-alias: pseudo-enum-macos
-            cargo-target: x86_64-unknown-macos
+            artifact-name: pseudo-enum-macos-x86_64
+            artifact-alias: pseudo-enum-macos-x86_64
+            cargo-target: x86_64-apple-darwin
+          - os: macos-latest
+            artifact-name: pseudo-enum-macos-aarch64
+            artifact-alias: pseudo-enum-macos-aarch64
+            cargo-target: aarch64-apple-darwin
     name: Build (${{ matrix.artifact-name }})
     runs-on: ${{ matrix.os }}
     steps:
