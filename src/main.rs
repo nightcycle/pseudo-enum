@@ -47,7 +47,10 @@ fn main() {
 
             let out_path = match out {
                 Some(path) => path,
-                None => PathBuf::from(DEFAULT_BUILD_PATH),
+                None => config_set
+                    .clone()
+                    .build_path
+                    .unwrap_or(PathBuf::from(DEFAULT_BUILD_PATH)),
             };
             fs::write(out_path, dump(config_set)).expect("Failed to write to file");
         }
